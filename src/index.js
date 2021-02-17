@@ -8,7 +8,7 @@ import './api/server'
 import { fetchTodos } from './features/todos/todos-slice'
 
 console.log('initial state: ', store.getState())
-store.dispatch(fetchTodos)
+store.dispatch(fetchTodos())
 
 ReactDOM.render(
   <React.StrictMode>

@@ -8,18 +8,25 @@ const Header = () => {
   const dispatch = useDispatch()
 
   const [text, setText] = useState('')
+  const [status, setStatus] = useState('idle')
 
-  const handleKeyDown = e => {
+  const handleKeyDown = async e => {
     const trimmedText = e.target.value.trim()
     // If the user pressed the Enter key:
     if (e.which === 13 && trimmedText) {
       // Dispatch the "todo added" action with this text
       //dispatch({ type: 'todos/todoAdded', payload: trimmedText })
-      dispatch(saveNewTodo(trimmedText))
+      setStatus('loading')
+      await dispatch(saveNewTodo(trimmedText))
       // And clear out the text input
       setText('')
+      setStatus('idle')
     }
   }
+
+  let isLoading = status === 'loading'
+  let placeholder = isLoading ? '' : 'What needs to be done?'
+  let loader = isLoading ? <div className="loader"/> : null
 
   const handleChange = (e) => setText(e.target.value)
 
@@ -27,11 +34,14 @@ const Header = () => {
     <header className="header">
       <input
         className="new-todo"
-        placeholder="What needs to be done?"
+        placeholder={placeholder}
+        autoFocus={true}
         value={text}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        disabled={isLoading}
       />
+      {loader}
     </header>
   )
 }

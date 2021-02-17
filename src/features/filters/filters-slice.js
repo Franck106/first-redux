@@ -1,4 +1,4 @@
-import { availableColors } from './colors'
+//import { availableColors } from './colors'
 
 export const StatusFilters = {
   All: 'all',
@@ -8,7 +8,14 @@ export const StatusFilters = {
 
 const initialState = {
   status: 'all',
-  colors: availableColors,
+  colors: [],
+}
+
+export const colorFilterChanged = (color, changeType) => {
+  return {
+    type: 'filters/colorFilterChanged',
+    payload: {color, changeType}
+  }
 }
 
 export const filtersReducer = (state = initialState, action) => {

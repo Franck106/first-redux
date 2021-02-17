@@ -2,7 +2,7 @@ import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { availableColors, capitalize } from '../features/filters/colors'
-import { StatusFilters } from '../features/filters/filters-slice'
+import { StatusFilters, colorFilterChanged } from '../features/filters/filters-slice'
 
 const RemainingTodos = ({ count }) => {
   const suffix = count === 1 ? '' : 's'
@@ -16,12 +16,11 @@ const RemainingTodos = ({ count }) => {
 }
 
 const StatusFilter = ({ value: status, onChange }) => {
-  const dispatch = useDispatch()
   const renderedFilters = Object.keys(StatusFilters).map((key) => {
     const value = StatusFilters[key]
 
     const handleClick = () => {
-      dispatch({ type: 'filters/statusFilterChanged', payload: value })
+      onChange(value)
     }
 
     const className = value === status ? 'selected' : ''
@@ -44,15 +43,11 @@ const StatusFilter = ({ value: status, onChange }) => {
 }
 
 const ColorFilters = ({ value: colors, onChange }) => {
-  const dispatch = useDispatch()
   const renderedColors = availableColors.map((color) => {
     const checked = colors.includes(color)
     const handleChange = () => {
       const changeType = checked ? 'removed' : 'added'
-      dispatch({
-        type: 'filters/colorFilterChanged',
-        payload: { color, changeType },
-      })
+      onChange(color, changeType)
     }
 
     return (
@@ -83,13 +78,18 @@ const ColorFilters = ({ value: colors, onChange }) => {
 }
 
 const Footer = () => {
+  const dispatch = useDispatch()
+
   const { status, colors } = useSelector((state) => state.filters)
   const todosRemaining = useSelector((state) => {
-    const uncompletedTodos = state.todos.filter((todo) => !todo.compelted)
-    return uncompletedTodos.length
+    const todos = state.todos.entities
+    Object.values(todos).forEach(todo => {
+      if(todo.compelted) {
+        delete todos[todo.id]
+      }
+    })
+    return todos.length
   })
-
-  const dispatch = useDispatch()
 
   const handleAllCompleted = () => {
     dispatch({ type: 'todo/allCompleted' })
@@ -100,9 +100,10 @@ const Footer = () => {
   }
 
   const onColorChange = (color, changeType) =>
-    console.log('Color change: ', { color, changeType })
+    dispatch(colorFilterChanged(color, changeType))
 
-  const onStatusChange = (status) => console.log('Status change: ', status)
+  const onStatusChange = (status) => 
+    dispatch({ type: 'filters/statusFilterChanged', payload: status })
 
   return (
     <footer className="footer">
